@@ -18,7 +18,9 @@ app.use(express.json());
 app.get('/api/entries', async (req, res, next) => {
   try {
     const sql = `SELECT *
-    from "entries"`;
+    from "entries"
+    order by "entryId" desc
+`;
     const params = [];
     const result = await db.query(sql, params);
     const entries = result.rows;
