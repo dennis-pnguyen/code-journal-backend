@@ -91,7 +91,7 @@ app.put('/api/entries/:entryId', async (req, res, next) => {
       "notes" = $3,
       "photoUrl" = $4
     where "entryId" = $1
-    returning*`;
+    returning *`;
     const params = [entryId, title, notes, photoUrl];
     const result = await db.query(sql, params);
     const entries = result.rows[0];
@@ -99,6 +99,30 @@ app.put('/api/entries/:entryId', async (req, res, next) => {
       throw new ClientError(404, `Cannot find entry with ${entryId}`);
     }
     res.status(200).json(entries);
+  } catch (err) {
+    console.error(err);
+    next(err);
+  }
+});
+
+// Delete an entry
+
+app.delete('/api/entries/:entryId', async (req, res, next) => {
+  try {
+    const entryId = Number(req.params.entryId);
+    validateEntryId(entryId);
+    const sql = `DELETE
+      from "entries"
+      where "entryId" = $1
+      returning *`;
+    const params = [entryId];
+    const result = await db.query(sql, params);
+    const deletedEntry = result.rows[0];
+    validateEntryId(entryId, deletedEntry);
+    if (!deletedEntry) {
+      throw new ClientError(404, `Cannot find entry with ${entryId}`);
+    }
+    res.status(200).json(deletedEntry);
   } catch (err) {
     console.error(err);
     next(err);
