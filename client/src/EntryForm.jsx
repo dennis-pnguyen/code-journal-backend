@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { addEntry, removeEntry, updateEntry } from './data';
+// import { removeEntry } from './data';
 
 /**
  * Form that adds or edits an entry.
@@ -11,23 +11,74 @@ export default function EntryForm({ entry, onSubmit }) {
   const [photoUrl, setPhotoUrl] = useState(entry?.photoUrl ?? '');
   const [notes, setNotes] = useState(entry?.notes ?? '');
   const [isDeleting, setIsDeleting] = useState(false);
+  const [error, setError] = useState();
+  const [addNewEntry, setAddNewEntry] = useState([]);
 
-  function handleSubmit(event) {
+  // Add new entry w/ fetch in React
+  async function addEntry(newEntry) {
+    try {
+      const response = await fetch('/api/entries', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newEntry),
+      });
+      if (!response.ok)
+        throw new Error(`Network response was NOT okay: ${response.status}`);
+      const added = await response.json();
+      setAddNewEntry(addNewEntry.concat(added));
+    } catch (err) {
+      console.error(err);
+      setError(err);
+    }
+  }
+
+  // Update an entry w/ fetch in React
+  async function updateEntry(updated) {
+    try {
+      const response = await fetch(`/api/entries/${updated.entryId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updated),
+      });
+      if (!response.ok) throw new Error('Unable to fetch results');
+    } catch (err) {
+      setError(err);
+    }
+  }
+
+  // Delete an entry w/ fetch in React
+  async function removeEntry(entryId) {
+    try {
+      const response = await fetch(`/api/entries/${entryId}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok)
+        throw new Error('Network status is not OK', `${response.status}`);
+    } catch (err) {
+      setError(err);
+    }
+  }
+
+  async function handleSubmit(event) {
     event.preventDefault();
     const newEntry = { title, photoUrl, notes };
     if (entry) {
-      updateEntry({ ...entry, ...newEntry });
+      await updateEntry({ ...entry, ...newEntry });
     } else {
-      addEntry(newEntry);
+      await addEntry(newEntry);
     }
     onSubmit();
   }
 
-  function handleDelete() {
-    removeEntry(entry.entryId);
+  async function handleDelete() {
+    await removeEntry(entry.entryId);
     onSubmit();
   }
-
+  if (error) return <div>{error.message}</div>;
   return (
     <div className="container">
       <div className="row">
