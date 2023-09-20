@@ -54,7 +54,49 @@ app.get('/api/entries/:entryId', async (req, res, next) => {
   }
 });
 
+// Create entry
+app.post('/api/entries', async (req, res, next) => {
+  try {
+    const { title, notes, photoUrl } = req.body;
+
+    const sql = `SELECT *
+    from "entries"`;
+    const params = [];
+    const result = await db.query(sql, params);
+    const entries = result.rows;
+    res.status(200).json(entries);
+  } catch (err) {
+    console.error(err);
+    next();
+  }
+});
+
 app.use(errorMiddleware);
 app.listen(process.env.PORT, () => {
   console.log(`express server listening on port ${process.env.PORT}`);
 });
+
+// validation functions
+function validateTitle(title) {
+  if (!title) {
+    throw new ClientError(400, '"title" is required');
+  }
+}
+
+function validateEntryId(entryId) {
+  if (!Number.isInteger(entryId) || entryId <= 0) {
+    throw new ClientError(400, '"entryId" must be a positive integer');
+  }
+}
+
+function validatePhotoUrl(photoUrl) {
+  if (!photoUrl) {
+    throw new ClientError(400, '"photoUrl" is required');
+  }
+}
+
+function validateNotes(notes) {
+  if (!notes) {
+    throw new ClientError(400, '"notes" is required');
+  }
+}
