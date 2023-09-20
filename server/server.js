@@ -78,6 +78,33 @@ app.post('/api/entries', async (req, res, next) => {
   }
 });
 
+// Update an entry
+
+app.put('/api/entries/:entryId', async (req, res, next) => {
+  try {
+    const entryId = Number(req.params.entryId);
+    validateEntryId(entryId);
+    const { title, notes, photoUrl } = req.body;
+
+    const sql = `UPDATE "entries"
+    set "title" = $2,
+      "notes" = $3,
+      "photoUrl" = $4
+    where "entryId" = $1
+    returning*`;
+    const params = [entryId, title, notes, photoUrl];
+    const result = await db.query(sql, params);
+    const entries = result.rows[0];
+    if (!entries) {
+      throw new ClientError(404, `Cannot find entry with ${entryId}`);
+    }
+    res.status(200).json(entries);
+  } catch (err) {
+    console.error(err);
+    next(err);
+  }
+});
+
 app.use(errorMiddleware);
 app.listen(process.env.PORT, () => {
   console.log(`express server listening on port ${process.env.PORT}`);
