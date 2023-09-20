@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { removeEntry } from './data';
+// import { removeEntry } from './data';
 
 /**
  * Form that adds or edits an entry.
@@ -30,7 +30,7 @@ export default function EntryForm({ entry, onSubmit }) {
       setAddNewEntry(addNewEntry.concat(added));
     } catch (err) {
       console.error(err);
-      setError(error);
+      setError(err);
     }
   }
 
@@ -44,10 +44,23 @@ export default function EntryForm({ entry, onSubmit }) {
         },
         body: JSON.stringify(updated),
       });
-      if (!response.ok) throw new Error('Unable to fetch results', error);
+      if (!response.ok) throw new Error('Unable to fetch results');
     } catch (err) {
       // console.error(err);
-      setError(error);
+      setError(err);
+    }
+  }
+
+  // Delete an entry w/ fetch in React
+  async function removeEntry(entryId) {
+    try {
+      const response = await fetch(`/api/entries/${entryId}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok)
+        throw new Error('Network status is not OK', `${response.status}`);
+    } catch (err) {
+      setError(err);
     }
   }
 
@@ -62,11 +75,11 @@ export default function EntryForm({ entry, onSubmit }) {
     onSubmit();
   }
 
-  function handleDelete() {
-    removeEntry(entry.entryId);
+  async function handleDelete() {
+    await removeEntry(entry.entryId);
     onSubmit();
   }
-
+  if (error) return <div>{error.message}</div>;
   return (
     <div className="container">
       <div className="row">
