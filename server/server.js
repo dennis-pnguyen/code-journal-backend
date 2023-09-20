@@ -58,16 +58,23 @@ app.get('/api/entries/:entryId', async (req, res, next) => {
 app.post('/api/entries', async (req, res, next) => {
   try {
     const { title, notes, photoUrl } = req.body;
+    validateNotes(notes);
+    validatePhotoUrl(photoUrl);
+    validateTitle(title);
 
-    const sql = `SELECT *
-    from "entries"`;
-    const params = [];
+    const sql = `
+    insert into "entries" ("title", "notes", "photoUrl")
+    values ($1, $2, $3)
+    returning *
+    `;
+
+    const params = [title, notes, photoUrl];
     const result = await db.query(sql, params);
-    const entries = result.rows;
+    const [entries] = result.rows;
     res.status(200).json(entries);
   } catch (err) {
     console.error(err);
-    next();
+    next(err);
   }
 });
 
