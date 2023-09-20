@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { removeEntry, updateEntry } from './data';
+import { removeEntry } from './data';
 
 /**
  * Form that adds or edits an entry.
@@ -14,6 +14,7 @@ export default function EntryForm({ entry, onSubmit }) {
   const [error, setError] = useState();
   const [addNewEntry, setAddNewEntry] = useState([]);
 
+  // Add new entry w/ fetch in React
   async function addEntry(newEntry) {
     try {
       const response = await fetch('/api/entries', {
@@ -33,13 +34,30 @@ export default function EntryForm({ entry, onSubmit }) {
     }
   }
 
-  function handleSubmit(event) {
+  // Update an entry w/ fetch in React
+  async function updateEntry(updated) {
+    try {
+      const response = await fetch(`/api/entries/${updated.entryId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updated),
+      });
+      if (!response.ok) throw new Error('Unable to fetch results', error);
+    } catch (err) {
+      // console.error(err);
+      setError(error);
+    }
+  }
+
+  async function handleSubmit(event) {
     event.preventDefault();
     const newEntry = { title, photoUrl, notes };
     if (entry) {
-      updateEntry({ ...entry, ...newEntry });
+      await updateEntry({ ...entry, ...newEntry });
     } else {
-      addEntry(newEntry);
+      await addEntry(newEntry);
     }
     onSubmit();
   }
