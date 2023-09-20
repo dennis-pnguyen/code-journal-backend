@@ -46,7 +46,6 @@ export default function EntryForm({ entry, onSubmit }) {
       });
       if (!response.ok) throw new Error('Unable to fetch results');
     } catch (err) {
-      // console.error(err);
       setError(err);
     }
   }
