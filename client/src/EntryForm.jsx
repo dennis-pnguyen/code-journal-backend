@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { addEntry, removeEntry, updateEntry } from './data';
+import { removeEntry, updateEntry } from './data';
 
 /**
  * Form that adds or edits an entry.
@@ -11,6 +11,27 @@ export default function EntryForm({ entry, onSubmit }) {
   const [photoUrl, setPhotoUrl] = useState(entry?.photoUrl ?? '');
   const [notes, setNotes] = useState(entry?.notes ?? '');
   const [isDeleting, setIsDeleting] = useState(false);
+  const [error, setError] = useState();
+  const [addNewEntry, setAddNewEntry] = useState([]);
+
+  async function addEntry(newEntry) {
+    try {
+      const response = await fetch('/api/entries', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newEntry),
+      });
+      if (!response.ok)
+        throw new Error(`Network response was NOT okay: ${response.status}`);
+      const added = await response.json();
+      setAddNewEntry(addNewEntry.concat(added));
+    } catch (err) {
+      console.error(err);
+      setError(error);
+    }
+  }
 
   function handleSubmit(event) {
     event.preventDefault();

@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import { FaPencilAlt } from 'react-icons/fa';
-// import { readEntries } from './data';
 
 export default function EntryList({ onCreate, onEdit }) {
-  // const entries = readEntries();
-
   const [entries, setEntries] = useState([]);
+
+  // Fetch entries using useEffect and fetch without localstorage
 
   useEffect(() => {
     async function getEntries() {
